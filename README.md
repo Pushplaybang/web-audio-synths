@@ -16,17 +16,8 @@ ACID-303 is a vanilla JavaScript synthesizer app with:
 
 No build step or dependencies are required.
 
-1. Open `/home/runner/work/web-audio-synths/web-audio-synths/index.html` in a modern browser.
+1. Open `index.html` in a modern browser.
 2. Click **Play** to start the sequencer.
-
-## Project structure
-
-- `index.html` — app layout and bootstrapping
-- `style.css` — synth UI styling
-- `js/synth.js` — audio engine
-- `js/sequencer.js` — step sequencer logic
-- `js/ui.js` — UI behavior
-- `js/worklets/` — AudioWorklet processors
 
 ## License
 
