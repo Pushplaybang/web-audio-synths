@@ -238,10 +238,19 @@ class AcidSynth {
   releaseNote(time) {
     if (!this.ctx) return;
     const t = time || this.ctx.currentTime;
-    this.vca.gain.cancelScheduledValues(t);
-    this.vca.gain.setValueAtTime(this.vca.gain.value, t);
-    this.vca.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-    this.vca.gain.setValueAtTime(0, t + 0.051);
+    // cancelAndHoldAtTime freezes the automation value at time t without
+    // a discontinuity, unlike cancelScheduledValues + setValueAtTime which
+    // reads .value at JS-execution time (wrong when t is in the future).
+    if (this.vca.gain.cancelAndHoldAtTime) {
+      this.vca.gain.cancelAndHoldAtTime(t);
+    } else {
+      this.vca.gain.cancelScheduledValues(t);
+      this.vca.gain.setValueAtTime(this.vca.gain.value, t);
+    }
+    // Smooth exponential approach to zero avoids the pop from an abrupt
+    // setValueAtTime(0) and works correctly even from very small values
+    // (unlike exponentialRampToValueAtTime which fails near zero).
+    this.vca.gain.setTargetAtTime(0, t, 0.01);
   }
 
   disableScope() { if (!this.ctx) return; this.limiter.disconnect(this.analyser); this.analyser.disconnect(this.ctx.destination); this.limiter.connect(this.ctx.destination); this.scopeEnabled = false; }
