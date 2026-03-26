@@ -27,7 +27,7 @@ describe('Sequencer constructor', () => {
     assert.strictEqual(seq.isPlaying, false);
   });
 
-  it('initialises currentStep to -1', () => {
+  it('initializes currentStep to -1', () => {
     const seq = new Sequencer(mockSynth());
     assert.strictEqual(seq.currentStep, -1);
   });

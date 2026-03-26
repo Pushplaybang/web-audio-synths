@@ -58,7 +58,7 @@ describe('NOTE_NAMES', () => {
 
 // ── AcidSynth constructor ─────────────────────────────────────
 describe('AcidSynth constructor', () => {
-  it('initialises with null ctx', () => {
+  it('initializes with null ctx', () => {
     const s = new AcidSynth();
     assert.strictEqual(s.ctx, null);
   });
