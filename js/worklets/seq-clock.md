@@ -63,7 +63,7 @@ const sps = (60 / tempo / 4) * sampleRate;
 
 For example, at 138 BPM and 48 kHz sample rate:
 ```
-sps = (60 / 138 / 4) * 48000 = 60 / 552 * 48000 ≈ 5217.4 samples per step
+sps = (60 / 138 / 4) * 48000 = 0.1087 * 48000 ≈ 5217.4 samples per step
 ```
 
 ### Step Detection

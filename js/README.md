@@ -89,7 +89,7 @@ Toggling an effect on or off smoothly crossfades between dry and wet paths — n
 
 The sequencer supports two timing strategies:
 
-1. **Worklet clock** (preferred) — `SeqClockProcessor` counts samples on the audio thread and posts `{ step, time, stepDuration }` messages via [`MessagePort`](https://developer.mozilla.org/en-US/docs/Web/API/MessagePort). The `time` value comes from [`currentTime`](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/currentTime) on the audio thread, giving sample-accurate scheduling.
+1. **Worklet clock** (preferred) — `SeqClockProcessor` counts samples on the audio thread and posts `{ step, time, stepDuration }` messages via [`MessagePort`](https://developer.mozilla.org/en-US/docs/Web/API/MessagePort). The `time` value is derived from the audio thread's `currentTime` parameter (the same [`AudioContext.currentTime`](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/currentTime) observed at render-quantum boundaries) plus sample-level offsets within the block, giving sample-accurate scheduling.
 
 2. **Fallback scheduler** — A `setTimeout` lookahead loop schedules notes 100 ms ahead using `AudioContext.currentTime`. This is the "Tale of Two Clocks" pattern — imprecise timer fires frequently, but actual note scheduling uses audio-thread time.
 

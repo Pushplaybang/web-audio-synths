@@ -236,7 +236,7 @@ For non-slide notes, the VCA gain follows this shape:
 ```
 
 Key techniques:
-- **[`exponentialRampToValueAtTime`](https://developer.mozilla.org/en-US/docs/Web/API/AudioParam/exponentialRampToValueAtTime)** is used for the decay portions because it sounds natural — human hearing is logarithmic.
+- **[`exponentialRampToValueAtTime`](https://developer.mozilla.org/en-US/docs/Web/API/AudioParam/exponentialRampToValueAtTime)** is used for the decay portions because it produces a constant rate of change in decibels, which sounds natural since loudness perception is logarithmic.
 - The final `setValueAtTime(0)` after the exponential ramp to `0.001` is essential because exponential ramps can never reach zero.
 - Accented notes have a higher peak volume and shorter decay.
 

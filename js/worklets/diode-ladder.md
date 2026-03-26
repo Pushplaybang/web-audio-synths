@@ -57,13 +57,13 @@ The filter processes audio one sample at a time inside the `process()` method. F
 ```js
 let freq = frequency[i] * Math.pow(2, detune[i] / 1200);
 if (freq < 30) freq = 30;
-if (freq > nyquist) freq = nyquist;
+if (freq > ny) freq = ny;  // ny = sampleRate * 0.45
 const g = 2 * Math.tan(Math.PI * freq / sampleRate);
 const G = g / (1 + g);
 ```
 
 1. **Apply detuning** — Detune in cents is converted to a frequency multiplier using the formula `2^(cents/1200)`. This is the same formula used by the Web Audio spec for [`AudioParam.detune`](https://developer.mozilla.org/en-US/docs/Web/API/OscillatorNode/detune).
-2. **Clamp** — The effective frequency is clamped between 30 Hz (to prevent DC or sub-audio instability) and 45% of the sample rate (a safety margin below the Nyquist frequency to prevent aliasing in the nonlinear stages).
+2. **Clamp** — The effective frequency is clamped between 30 Hz (to prevent DC or sub-audio instability) and 45% of the sample rate (`sampleRate * 0.45`). This is intentionally lower than the true Nyquist frequency (50%) to provide a safety margin against aliasing in the nonlinear saturation stages.
 3. **Bilinear transform** — `g = 2 * tan(π * f / sr)` maps the analog prototype frequency to the digital domain. This is the same transform used in standard IIR filter design, and it preserves the frequency response shape at the expense of slight frequency warping near Nyquist.
 4. **Integrator gain** — `G = g / (1 + g)` is the one-pole integrator transfer coefficient used in the Topology-Preserving Transform (TPT) form of the filter.
 
