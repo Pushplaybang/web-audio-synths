@@ -24,7 +24,7 @@ npm start
 
 Then open [http://localhost:3000](http://localhost:3000) in a modern browser and click **Play** to start the sequencer.
 
-Set a custom port with `PORT=8080 node server.js`.
+Set a custom port with `PORT=8080 node server.js` (on Windows: `set PORT=8080 && node server.js`).
 
 ## License
 

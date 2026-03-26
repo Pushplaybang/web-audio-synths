@@ -24,17 +24,17 @@ const MIME_TYPES = {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
-  let filePath = path.join(ROOT, decodeURIComponent(url.pathname));
+  let filePath = path.resolve(ROOT, decodeURIComponent(url.pathname).replace(/^\/+/, ''));
 
   // Prevent directory traversal
-  if (!filePath.startsWith(ROOT)) {
+  if (!filePath.startsWith(path.resolve(ROOT))) {
     res.writeHead(403);
     res.end('Forbidden');
     return;
   }
 
   // Default to index.html for directory requests
-  if (filePath.endsWith('/') || filePath === ROOT) {
+  if (filePath.endsWith(path.sep) || filePath === path.resolve(ROOT)) {
     filePath = path.join(filePath, 'index.html');
   }
 
@@ -49,7 +49,12 @@ const server = http.createServer((req, res) => {
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
     res.writeHead(200, { 'Content-Type': contentType });
-    fs.createReadStream(filePath).pipe(res);
+    fs.createReadStream(filePath)
+      .on('error', () => {
+        res.writeHead(500);
+        res.end('Internal Server Error');
+      })
+      .pipe(res);
   });
 });
 
