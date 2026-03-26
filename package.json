@@ -1,0 +1,7 @@
+{
+  "name": "web-audio-synths",
+  "private": true,
+  "scripts": {
+    "test": "node --test 'test/**/*.test.js' 'test/*.test.js'"
+  }
+}
