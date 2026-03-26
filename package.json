@@ -1,0 +1,9 @@
+{
+  "name": "acid-303",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Browser-based TB-303 style synth and step sequencer",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
