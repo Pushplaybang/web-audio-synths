@@ -4,6 +4,7 @@
   "private": true,
   "description": "Browser-based TB-303 style synth and step sequencer",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test test/**/*.test.js test/*.test.js"
   }
 }
