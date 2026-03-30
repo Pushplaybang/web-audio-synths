@@ -14,10 +14,17 @@ ACID-303 is a vanilla JavaScript synthesizer app with:
 
 ## Run locally
 
-No build step or dependencies are required.
+No build step or external dependencies are required.
 
-1. Open `index.html` in a modern browser.
-2. Click **Play** to start the sequencer.
+```bash
+node server.js
+# or
+npm start
+```
+
+Then open [http://localhost:3000](http://localhost:3000) in a modern browser and click **Play** to start the sequencer.
+
+Set a custom port with `PORT=8080 node server.js` (on Windows: `set PORT=8080 && node server.js`).
 
 ## License
 

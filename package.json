@@ -1,7 +1,10 @@
 {
-  "name": "web-audio-synths",
+  "name": "acid-303",
+  "version": "0.0.0",
   "private": true,
+  "description": "Browser-based TB-303 style synth and step sequencer",
   "scripts": {
-    "test": "node --test 'test/**/*.test.js' 'test/*.test.js'"
+    "start": "node server.js",
+    "test": "node --test test/**/*.test.js test/*.test.js"
   }
 }
