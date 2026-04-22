@@ -64,11 +64,12 @@ func process_sample(decay_time: float, sample_rate: float) -> float:
 			_value += _rate
 			if _value >= _target:
 				_value = _target
-				# Transition to decay: exponential decay
+				# Transition to decay: exponential decay.
+				# The 0.33 factor compresses the time constant so the decay
+				# audibly reaches near-zero within the specified decay_time,
+				# matching the web version's exponentialRampToValueAtTime feel.
 				_phase = Phase.DECAY
 				var sustain_level := SynthSpec.BASE_VOL * 0.4 + 0.001
-				var total_decay := decay_time + 0.1  # decay + release tail
-				var decay_samples := maxf(total_decay * sample_rate, 1.0)
 				_rate = exp(-1.0 / (decay_time * sample_rate * 0.33))
 				_target = sustain_level
 

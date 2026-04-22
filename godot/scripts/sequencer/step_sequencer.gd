@@ -113,7 +113,7 @@ func _init_pattern() -> void:
 ## Randomize all steps using the spec's randomization rules.
 func randomize_pattern() -> void:
 	for i in range(SynthSpec.SEQ_STEPS):
-		var octave_base: int = 48 if randf() < 0.3 else 36
+		var octave_base: int = 36 if randf() < 0.7 else 48
 		var scale_note: int = SynthSpec.RANDOM_SCALE[randi() % SynthSpec.RANDOM_SCALE.size()]
 		steps[i] = StepData.new(
 			octave_base + scale_note,

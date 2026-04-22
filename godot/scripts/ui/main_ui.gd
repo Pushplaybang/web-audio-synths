@@ -269,4 +269,5 @@ func _key_to_note(keycode: int) -> int:
 		KEY_N: return 9
 		KEY_J: return 10
 		KEY_M: return 11
+		KEY_COMMA: return 12
 	return -1
