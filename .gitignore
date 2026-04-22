@@ -1,1 +1,8 @@
 node_modules/
+
+# Godot
+godot/.godot/
+godot/.import/
+godot/export_presets.cfg
+*.import
+*.uid

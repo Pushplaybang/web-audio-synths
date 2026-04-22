@@ -1,0 +1,364 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ACID-303 Synth Behavior Spec",
+  "description": "Platform-agnostic specification of all synth parameters, signal chain, sequencer rules, and envelope shapes. Used as the single source of truth when porting to Godot, JUCE/VST, Electron, or any other platform.",
+  "version": "1.0.0",
+
+  "sampleRate": {
+    "description": "Reference sample rate. All timing values are specified in seconds unless noted.",
+    "default": 44100
+  },
+
+  "parameters": {
+    "waveform": {
+      "type": "enum",
+      "values": ["sawtooth", "square"],
+      "default": "sawtooth",
+      "description": "Main oscillator waveform."
+    },
+    "tuning": {
+      "type": "int",
+      "min": -12,
+      "max": 12,
+      "default": 0,
+      "step": 1,
+      "unit": "semitones",
+      "description": "Pitch offset applied to incoming MIDI notes."
+    },
+    "cutoff": {
+      "type": "float",
+      "min": 60,
+      "max": 8000,
+      "default": 800,
+      "curve": "exponential",
+      "unit": "Hz",
+      "description": "Filter cutoff frequency. Exponential knob mapping."
+    },
+    "resonance": {
+      "type": "float",
+      "min": 0,
+      "max": 30,
+      "default": 8,
+      "curve": "linear",
+      "description": "Filter resonance. Internally scaled to 0–3.8 for feedback coefficient."
+    },
+    "envMod": {
+      "type": "float",
+      "min": 1,
+      "max": 8000,
+      "default": 3000,
+      "curve": "exponential",
+      "unit": "Hz",
+      "description": "Filter envelope modulation depth. Added to cutoff on note trigger."
+    },
+    "decay": {
+      "type": "float",
+      "min": 0.02,
+      "max": 1.5,
+      "default": 0.3,
+      "curve": "linear",
+      "unit": "seconds",
+      "description": "Filter and amplitude envelope decay time."
+    },
+    "accent": {
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.6,
+      "curve": "linear",
+      "description": "Accent intensity. Affects volume boost and filter envelope depth on accented steps."
+    },
+    "distOn": {
+      "type": "bool",
+      "default": false,
+      "description": "Enable/disable distortion effect."
+    },
+    "distAmount": {
+      "type": "float",
+      "min": 0,
+      "max": 100,
+      "default": 40,
+      "curve": "linear",
+      "description": "Distortion drive amount. Controls waveshaper transfer curve steepness."
+    },
+    "delayOn": {
+      "type": "bool",
+      "default": false,
+      "description": "Enable/disable tape delay effect."
+    },
+    "delayTime": {
+      "type": "float",
+      "min": 0.05,
+      "max": 1.0,
+      "default": 0.375,
+      "curve": "linear",
+      "unit": "seconds",
+      "description": "Delay time."
+    },
+    "delayFeedback": {
+      "type": "float",
+      "min": 0,
+      "max": 0.9,
+      "default": 0.45,
+      "curve": "linear",
+      "description": "Delay feedback amount."
+    },
+    "delayMix": {
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.3,
+      "curve": "linear",
+      "description": "Delay wet/dry mix."
+    },
+    "reverbOn": {
+      "type": "bool",
+      "default": false,
+      "description": "Enable/disable reverb effect."
+    },
+    "reverbDecay": {
+      "type": "float",
+      "min": 0.3,
+      "max": 5.0,
+      "default": 2.0,
+      "curve": "linear",
+      "unit": "seconds",
+      "description": "Reverb impulse response decay length."
+    },
+    "reverbMix": {
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.2,
+      "curve": "linear",
+      "description": "Reverb wet/dry mix."
+    },
+    "lfoRate": {
+      "type": "float",
+      "min": 0.05,
+      "max": 30,
+      "default": 4,
+      "curve": "exponential",
+      "unit": "Hz",
+      "description": "LFO speed. Modulates filter detune."
+    },
+    "lfoAmount": {
+      "type": "float",
+      "min": 0,
+      "max": 4800,
+      "default": 0,
+      "curve": "linear",
+      "unit": "cents",
+      "description": "LFO modulation depth applied to filter detune."
+    },
+    "lfoWave": {
+      "type": "enum",
+      "values": ["sine", "triangle", "square"],
+      "default": "sine",
+      "description": "LFO waveform shape."
+    }
+  },
+
+  "signalChain": {
+    "description": "Signal flow from oscillator to output.",
+    "stages": [
+      {
+        "id": "oscillator",
+        "type": "oscillator",
+        "waveforms": ["sawtooth", "square"],
+        "frequencySource": "midiNote + tuning",
+        "formula": "440 * 2^((midi - 69) / 12)"
+      },
+      {
+        "id": "subOscillator",
+        "type": "oscillator",
+        "waveform": "square",
+        "frequency": "oscillator.frequency / 2",
+        "gain": 0,
+        "description": "Sub oscillator one octave below. Currently gain-zeroed, available for future use."
+      },
+      {
+        "id": "filter",
+        "type": "diodeLadder",
+        "poles": 4,
+        "slopeDb": 24,
+        "saturation": "tanh",
+        "params": {
+          "frequency": { "ref": "cutoff", "min": 20, "max": 18000 },
+          "resonance": { "ref": "resonance", "min": 0, "max": 30, "internalScale": "value / 30 * 3.8" },
+          "detune": { "min": -4800, "max": 4800, "unit": "cents", "modulatedBy": "lfo" }
+        },
+        "algorithm": {
+          "description": "4-pole ladder with per-stage tanh saturation. Uses Float64 internally.",
+          "perSample": [
+            "freq = frequency * 2^(detune/1200)",
+            "freq = clamp(freq, 30, sampleRate * 0.45)",
+            "g = 2 * tan(PI * freq / sampleRate)",
+            "G = g / (1 + g)",
+            "k = (resonance / 30) * 3.8",
+            "fb = k * tanh(s[3])",
+            "x = tanh(input - fb)",
+            "for each stage i in [0..3]: s[i] += G * (x - s[i]); x = tanh(s[i])",
+            "output = s[3]"
+          ]
+        }
+      },
+      {
+        "id": "vca",
+        "type": "amplifier",
+        "initialGain": 0
+      },
+      {
+        "id": "distortion",
+        "type": "waveshaper",
+        "bypass": "!distOn",
+        "oversample": "4x",
+        "transferFunction": "((1 + k) * x) / (1 + k * abs(x)) where k = distAmount * 2",
+        "crossfade": {
+          "description": "Dual waveshaper nodes. New curve written to silent one, then crossfaded over 20ms."
+        }
+      },
+      {
+        "id": "delay",
+        "type": "feedbackDelay",
+        "bypass": "!delayOn",
+        "maxTime": 2.0,
+        "feedbackFilter": { "type": "lowpass", "frequency": 3500 }
+      },
+      {
+        "id": "reverb",
+        "type": "convolution",
+        "bypass": "!reverbOn",
+        "irGeneration": {
+          "algorithm": "white noise * (1 - i/len)^2.5",
+          "channels": 2,
+          "length": "sampleRate * reverbDecay"
+        }
+      },
+      {
+        "id": "master",
+        "type": "amplifier",
+        "gain": 0.7
+      },
+      {
+        "id": "limiter",
+        "type": "compressor",
+        "threshold": -3,
+        "knee": 0,
+        "ratio": 20,
+        "attack": 0.001,
+        "release": 0.05
+      }
+    ]
+  },
+
+  "envelopes": {
+    "amplitude": {
+      "trigger": "noteOn (non-slide)",
+      "stages": [
+        { "phase": "attack", "from": 0.001, "to": "peakVol", "type": "linear", "duration": 0.005 },
+        { "phase": "decay", "to": "baseVol * 0.4 + 0.001", "type": "exponential", "duration": "decay" },
+        { "phase": "release", "to": 0.001, "type": "exponential", "duration": 0.1 },
+        { "phase": "off", "to": 0, "type": "instant", "delay": 0.001 }
+      ],
+      "accentBehavior": {
+        "baseVol": 0.3,
+        "peakVol": "baseVol + accentAmt * 0.4",
+        "accentAmt": "isAccent ? accent : 0",
+        "decayMultiplier": "isAccent ? 0.7 : 1.0"
+      }
+    },
+    "filter": {
+      "trigger": "noteOn (non-slide)",
+      "stages": [
+        { "phase": "attack", "to": "min(cutoff + envMod, 12000)", "type": "exponential", "duration": 0.003 },
+        { "phase": "decay", "to": "max(cutoff, 30)", "type": "exponential", "duration": "0.003 + decay" }
+      ],
+      "accentBehavior": {
+        "envMod": "envMod * (1 + accentAmt * 1.5)"
+      }
+    },
+    "release": {
+      "description": "On explicit release (gate off or non-slide transition), VCA uses setTargetAtTime with tc=0.01 toward 0."
+    }
+  },
+
+  "sequencer": {
+    "steps": 16,
+    "stepProperties": {
+      "note": { "type": "int", "min": 24, "max": 72, "default": 36, "unit": "midiNote" },
+      "gate": { "type": "bool", "default": false },
+      "accent": { "type": "bool", "default": false },
+      "slide": { "type": "bool", "default": false }
+    },
+    "tempo": {
+      "min": 40,
+      "max": 300,
+      "default": 138,
+      "unit": "bpm"
+    },
+    "stepDuration": "60 / tempo / 4 (seconds per 16th note)",
+    "clockSource": "Sample-counter on audio thread. Posts {step, time, stepDuration} at each step boundary.",
+    "gateBehavior": {
+      "noteOn": "Triggered at step boundary time for gated steps.",
+      "noteOff": "Released at time + stepDuration * 0.75 unless next step has both gate AND slide.",
+      "slide": "When slide is true on current step, oscillator frequency linearly ramps over 60ms to new note."
+    },
+    "wrapAround": "Step 15 checks step 0 for slide/gate continuation.",
+    "randomize": {
+      "scale": [0, 3, 5, 7, 10, 12],
+      "scaleDescription": "Minor pentatonic + octave, relative to root.",
+      "octaveBase": "36 (70% chance) or 48 (30% chance)",
+      "gateProbability": 0.7,
+      "accentProbability": 0.25,
+      "slideProbability": 0.2
+    }
+  },
+
+  "lfo": {
+    "target": "filter.detune",
+    "waveforms": ["sine", "triangle", "square"],
+    "rateRange": { "min": 0.05, "max": 30, "unit": "Hz" },
+    "depthRange": { "min": 0, "max": 4800, "unit": "cents" },
+    "description": "Modulates filter detune in cents. Cents are multiplicative so cannot produce negative frequencies."
+  },
+
+  "smoothing": {
+    "default": {
+      "method": "setTargetAtTime",
+      "timeConstant": 0.015,
+      "description": "All parameter changes use cancel → anchor → setTargetAtTime for click-free transitions."
+    },
+    "distortionCrossfade": { "timeConstant": 0.02 },
+    "delayTime": { "timeConstant": 0.03 }
+  },
+
+  "midi": {
+    "noteRange": { "min": 24, "max": 72 },
+    "keyboardMapping": {
+      "z": 0, "s": 1, "x": 2, "d": 3, "c": 4, "v": 5, "g": 6,
+      "b": 7, "h": 8, "n": 9, "j": 10, "m": 11, ",": 12
+    },
+    "keyboardBaseOctave": 48,
+    "description": "Computer keyboard maps to one octave starting at C4 (MIDI 48)."
+  },
+
+  "defaultPattern": [
+    { "note": 36, "gate": true, "accent": false, "slide": false },
+    { "note": 36, "gate": true, "accent": true, "slide": false },
+    { "note": 39, "gate": true, "accent": false, "slide": false },
+    { "note": 36, "gate": true, "accent": false, "slide": true },
+    { "note": 48, "gate": true, "accent": true, "slide": false },
+    { "note": 36, "gate": false, "accent": false, "slide": false },
+    { "note": 39, "gate": true, "accent": false, "slide": false },
+    { "note": 41, "gate": true, "accent": true, "slide": false },
+    { "note": 36, "gate": true, "accent": false, "slide": false },
+    { "note": 36, "gate": true, "accent": false, "slide": true },
+    { "note": 48, "gate": true, "accent": false, "slide": false },
+    { "note": 46, "gate": true, "accent": true, "slide": true },
+    { "note": 36, "gate": true, "accent": false, "slide": false },
+    { "note": 39, "gate": false, "accent": false, "slide": false },
+    { "note": 41, "gate": true, "accent": true, "slide": false },
+    { "note": 43, "gate": true, "accent": false, "slide": true }
+  ]
+}
