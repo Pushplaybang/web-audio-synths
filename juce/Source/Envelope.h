@@ -65,9 +65,12 @@ public:
                 {
                     value_ = target_;
                     // Transition to decay: exponential decay.
-                    // The 0.33 factor compresses the time constant so the decay
-                    // audibly reaches near-zero within the specified decayTime,
-                    // matching the web version's exponentialRampToValueAtTime feel.
+                    // The 0.33 factor is an empirical time-constant compression that makes
+                    // the exponential decay audibly reach near-silence within the user-facing
+                    // decayTime parameter. Without it, the standard exp(-1/(tc*sr)) envelope
+                    // would still be at ~37% after one time constant. 0.33 gives ~3 time
+                    // constants within decayTime, reaching ~5% (-26 dB) — matching the
+                    // web version's exponentialRampToValueAtTime perception.
                     phase_ = Phase::Decay;
                     const float sustainLevel = kBaseVol * 0.4f + 0.001f;
                     rate_ = std::exp(-1.0f / (decayTime * sampleRate * 0.33f));

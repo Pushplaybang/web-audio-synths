@@ -31,6 +31,10 @@ public:
     float getAmount() const { return amount_; }
 
     /// Process a single sample through the waveshaper with 4x oversampling.
+    /// Uses simple linear-interpolation upsample (4 evenly spaced points between
+    /// consecutive input samples), then applies the waveshaper, then averages back
+    /// down with a one-pole anti-alias filter. This suppresses aliasing harmonics
+    /// from the waveshaper's nonlinearity.
     float processSample(float input)
     {
         if (!enabled_) return input;

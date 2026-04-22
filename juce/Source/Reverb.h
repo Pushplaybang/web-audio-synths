@@ -45,9 +45,10 @@ public:
     {
         if (!enabled_) return input;
 
-        // Feedback coefficient derived from decay time
-        constexpr double avgDelay = 1521.75;  // average of kDelayLengths
-        const double loopTime = avgDelay / static_cast<double>(sampleRate_);
+        // Feedback coefficient derived from decay time.
+        // For a delay line of avgDelay samples at sampleRate Hz, we want the
+        // signal to decay by 60 dB (factor 0.001) over 'decay' seconds.
+        const double loopTime = kAvgDelay / static_cast<double>(sampleRate_);
         const float fb = static_cast<float>(
             std::pow(0.001, loopTime / static_cast<double>(std::max(decay_, 0.1f))));
 
@@ -75,6 +76,9 @@ public:
 private:
     static constexpr int kNumLines = 4;
     static constexpr std::array<int, 4> kDelayLengths = { 1557, 1617, 1491, 1422 };
+    // Average of kDelayLengths = (1557+1617+1491+1422)/4 = 1521.75
+    // Used for computing the feedback coefficient from the target decay time.
+    static constexpr double kAvgDelay = 1521.75;
 
     bool  enabled_    = false;
     float decay_      = kReverbDecayDefault;

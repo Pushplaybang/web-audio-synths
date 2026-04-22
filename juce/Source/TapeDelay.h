@@ -23,7 +23,8 @@ public:
         writePos_ = 0;
         filterState_ = 0.0f;
 
-        // Precompute the feedback filter coefficient
+        // Precompute the one-pole lowpass coefficient for the feedback path.
+        // Standard RC-filter approximation: coeff = 1 - e^(-2π·f/sr)
         lpCoeff_ = 1.0f - std::exp(-2.0f * static_cast<float>(M_PI)
                                      * kFeedbackFilterFreq / sampleRate);
     }
