@@ -6,3 +6,8 @@ godot/.import/
 godot/export_presets.cfg
 *.import
 *.uid
+
+# JUCE / CMake
+juce/build/
+juce/_deps/
+CMakeUserPresets.json

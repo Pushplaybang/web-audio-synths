@@ -9,7 +9,7 @@ A TB-303 style monophonic acid synth and step sequencer — multi-platform.
 | **Web** (reference implementation) | ✅ Stable | [`index.html`](./index.html) |
 | **Godot 4.4** (game/desktop) | 🚧 In progress | [`godot/`](./godot/) |
 | **Desktop** (Electron/Tauri wrap) | 📋 Planned | — |
-| **AU/VST** (DAW plugin via JUCE) | 📋 Planned | — |
+| **AU/VST** (DAW plugin via JUCE) | 🚧 In progress | [`juce/`](./juce/) |
 
 ## Features
 
@@ -42,6 +42,10 @@ Set a custom port with `PORT=8080 node server.js` (on Windows: `set PORT=8080 &&
 ## Godot Version
 
 See [`godot/README.md`](./godot/README.md) for setup and architecture.
+
+## JUCE VST/AU Plugin
+
+See [`juce/README.md`](./juce/README.md) for build instructions and architecture.
 
 ## Tests
 
