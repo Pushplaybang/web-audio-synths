@@ -4,6 +4,7 @@
 // PolyBLEP-antialiased sawtooth and square waveforms for DAW-quality audio.
 // Phase-continuous across frequency changes for glitch-free slides.
 
+#include "SynthSpec.h"
 #include <cmath>
 
 namespace acid303

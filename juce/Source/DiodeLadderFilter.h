@@ -5,6 +5,7 @@
 // Uses double precision for numerical stability (matching web Float64Array).
 // Per-stage tanh saturation gives the 303's characteristic squelch.
 
+#include "SynthSpec.h"
 #include <cmath>
 #include <algorithm>
 
