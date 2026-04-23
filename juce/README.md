@@ -7,7 +7,7 @@ This is a direct port of the [web version](../index.html) using the [shared synt
 ## Requirements
 
 - [CMake 3.22+](https://cmake.org/download/)
-- C++17 compiler (Clang, GCC, or MSVC)
+- C and C++17 compiler (Clang, GCC, or MSVC — both C and C++ compilers are required by JUCE)
 - macOS: Xcode 14+ (for AU builds)
 - Windows: Visual Studio 2019+ (for VST3 builds)
 - Linux: ALSA dev headers (`libasound2-dev`), plus X11/GL headers for GUI
